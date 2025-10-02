@@ -133,13 +133,11 @@ export const Comments: CollectionConfig = {
   hooks: {
     beforeChange: [
       ({ data, req, operation }) => {
-        // Capture IP address and user agent for new comments
+        // Capture user agent for new comments
         if (operation === 'create') {
-          if (req?.ip) {
-            data.ipAddress = req.ip
-          }
-          if (req?.headers?.['user-agent']) {
-            data.userAgent = req.headers['user-agent']
+          const userAgent = req?.headers?.get?.('user-agent')
+          if (userAgent) {
+            data.userAgent = userAgent
           }
         }
         

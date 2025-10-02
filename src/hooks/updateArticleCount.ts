@@ -1,4 +1,4 @@
-import type { AfterChangeHook, AfterDeleteHook } from 'payload'
+import type { CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'payload'
 
 const updateUserArticleCount = async (userId: string | number, payload: any) => {
   if (!userId) return
@@ -29,7 +29,7 @@ const updateUserArticleCount = async (userId: string | number, payload: any) => 
   }
 }
 
-export const updateArticleCountAfterChange: AfterChangeHook = async ({
+export const updateArticleCountAfterChange: CollectionAfterChangeHook = async ({
   doc,
   previousDoc,
   operation,
@@ -56,7 +56,7 @@ export const updateArticleCountAfterChange: AfterChangeHook = async ({
   return doc
 }
 
-export const updateArticleCountAfterDelete: AfterDeleteHook = async ({
+export const updateArticleCountAfterDelete: CollectionAfterDeleteHook = async ({
   doc,
   req,
 }) => {
