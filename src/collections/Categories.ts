@@ -46,7 +46,7 @@ export const Categories: CollectionConfig = {
         description: 'Hex color code for category styling',
         placeholder: '#000000',
       },
-      validate: (val) => {
+      validate: (val: string) => {
         if (val && !/^#[0-9A-F]{6}$/i.test(val)) {
           return 'Please enter a valid hex color code (e.g., #FF0000)'
         }

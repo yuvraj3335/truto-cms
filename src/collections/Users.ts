@@ -77,7 +77,7 @@ export const Users: CollectionConfig = {
           name: 'url',
           type: 'text',
           required: true,
-          validate: (val) => {
+          validate: (val: string) => {
             if (!val || (!val.startsWith('http://') && !val.startsWith('https://'))) {
               return 'URL must start with http:// or https://'
             }
@@ -89,7 +89,7 @@ export const Users: CollectionConfig = {
     {
       name: 'website',
       type: 'text',
-      validate: (val) => {
+      validate: (val: string) => {
         if (val && !val.startsWith('http://') && !val.startsWith('https://')) {
           return 'Website URL must start with http:// or https://'
         }

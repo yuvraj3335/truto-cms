@@ -43,7 +43,7 @@ export const Comments: CollectionConfig = {
       type: 'text',
       required: true,
       maxLength: 100,
-      validate: (val) => {
+      validate: (val: string) => {
         if (!val || val.trim().length === 0) {
           return 'Author name is required'
         }
@@ -59,7 +59,7 @@ export const Comments: CollectionConfig = {
     {
       name: 'authorWebsite',
       type: 'text',
-      validate: (val) => {
+      validate: (val: string) => {
         if (val && !val.startsWith('http://') && !val.startsWith('https://')) {
           return 'Website URL must start with http:// or https://'
         }
@@ -71,7 +71,7 @@ export const Comments: CollectionConfig = {
       type: 'textarea',
       required: true,
       maxLength: 1000,
-      validate: (val) => {
+      validate: (val: string) => {
         if (!val || val.trim().length === 0) {
           return 'Comment content is required'
         }
