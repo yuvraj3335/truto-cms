@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { updateArticleCountAfterChange, updateArticleCountAfterDelete } from '../hooks/updateArticleCount'
 
 const calculateReadingTime = (content: any): number => {
@@ -98,6 +99,14 @@ export const Articles: CollectionConfig = {
       type: 'richText',
       required: true,
       localized: true,
+      editor: lexicalEditor({
+        features: ({ defaultFeatures }) => [
+          ...defaultFeatures,
+        ],
+      }),
+      admin: {
+        description: 'Write your article content here',
+      },
     },
     {
       name: 'excerpt',
