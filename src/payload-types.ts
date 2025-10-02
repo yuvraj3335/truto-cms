@@ -228,6 +228,9 @@ export interface Article {
   id: number;
   title: string;
   slug: string;
+  /**
+   * The main content of your article
+   */
   content: {
     root: {
       type: string;
@@ -258,6 +261,9 @@ export interface Article {
    */
   publishedDate?: string | null;
   categories: (number | Category)[];
+  /**
+   * Article tags for categorization and SEO
+   */
   tags?:
     | {
         tag: string;

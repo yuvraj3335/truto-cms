@@ -96,14 +96,10 @@ export const Articles: CollectionConfig = {
     },
     {
       name: 'content',
-      type: 'richText',
+      type: 'textarea',
       required: true,
-      localized: true,
-      editor: lexicalEditor({
-        features: ({ defaultFeatures }) => [...defaultFeatures],
-      }),
       admin: {
-        description: 'The main content of your article',
+        description: 'The main content of your article (temporary textarea - will be rich text once working)',
       },
     },
     {
