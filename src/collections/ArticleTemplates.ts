@@ -28,7 +28,7 @@ export const ArticleTemplates: CollectionConfig = {
       admin: {
         description: 'Unique identifier for the template',
       },
-      validate: (val) => {
+      validate: (val: string) => {
         if (!val || !/^[a-z0-9-_]+$/.test(val)) {
           return 'Name must contain only lowercase letters, numbers, hyphens, and underscores'
         }
@@ -57,7 +57,7 @@ export const ArticleTemplates: CollectionConfig = {
       admin: {
         description: 'JSON schema defining the template structure and default values',
       },
-      validate: (val) => {
+      validate: (val: any) => {
         if (!val) {
           return 'Schema is required'
         }
@@ -68,7 +68,7 @@ export const ArticleTemplates: CollectionConfig = {
           } else if (typeof val !== 'object') {
             return 'Schema must be valid JSON'
           }
-        } catch (error) {
+        } catch (_error) {
           return 'Schema must be valid JSON'
         }
         
