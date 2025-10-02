@@ -1,15 +1,18 @@
 import type { CollectionConfig } from 'payload'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { updateArticleCountAfterChange, updateArticleCountAfterDelete } from '../hooks/updateArticleCount'
+import {
+  updateArticleCountAfterChange,
+  updateArticleCountAfterDelete,
+} from '../hooks/updateArticleCount'
 
 const calculateReadingTime = (content: any): number => {
   if (!content) return 0
-  
+
   // Extract text from Lexical editor content
   const extractText = (node: any): string => {
     if (typeof node === 'string') return node
     if (!node || !node.children) return ''
-    
+
     return node.children
       .map((child: any) => {
         if (child.text) return child.text
@@ -18,11 +21,11 @@ const calculateReadingTime = (content: any): number => {
       })
       .join(' ')
   }
-  
+
   const text = extractText(content)
-  const wordCount = text.split(/\s+/).filter(word => word.length > 0).length
+  const wordCount = text.split(/\s+/).filter((word) => word.length > 0).length
   const averageWordsPerMinute = 200
-  
+
   return Math.ceil(wordCount / averageWordsPerMinute)
 }
 
@@ -43,12 +46,9 @@ export const Articles: CollectionConfig = {
       if (user?.role === 'super-admin' || user?.role === 'admin') {
         return true
       }
-      
+
       return {
-        or: [
-          { status: { equals: 'published' } },
-          { author: { equals: user?.id } },
-        ],
+        or: [{ status: { equals: 'published' } }, { author: { equals: user?.id } }],
       }
     },
     create: ({ req: { user } }) => Boolean(user),
@@ -56,7 +56,7 @@ export const Articles: CollectionConfig = {
       if (user?.role === 'super-admin' || user?.role === 'admin' || user?.role === 'editor') {
         return true
       }
-      
+
       return {
         author: { equals: user?.id },
       }
@@ -65,7 +65,7 @@ export const Articles: CollectionConfig = {
       if (user?.role === 'super-admin' || user?.role === 'admin') {
         return true
       }
-      
+
       return {
         author: { equals: user?.id },
       }
@@ -100,12 +100,10 @@ export const Articles: CollectionConfig = {
       required: true,
       localized: true,
       editor: lexicalEditor({
-        features: ({ defaultFeatures }) => [
-          ...defaultFeatures,
-        ],
+        features: ({ defaultFeatures }) => [...defaultFeatures],
       }),
       admin: {
-        description: 'Write your article content here',
+        description: 'The main content of your article',
       },
     },
     {
@@ -261,24 +259,25 @@ export const Articles: CollectionConfig = {
               .replace(/[^a-z0-9]+/g, '-')
               .replace(/(^-|-$)/g, '')
           }
-          
+
           // Calculate reading time
           if (data.content) {
             data.readingTime = calculateReadingTime(data.content)
           }
-          
+
           // Auto-set publishedDate when status changes to published
           if (data.status === 'published' && !data.publishedDate) {
             data.publishedDate = new Date().toISOString()
           }
-          
+
           // Auto-generate excerpt if empty
           if (data.content && !data.excerpt) {
-            const text = typeof data.content === 'string' ? data.content : JSON.stringify(data.content)
+            const text =
+              typeof data.content === 'string' ? data.content : JSON.stringify(data.content)
             data.excerpt = text.substring(0, 160).replace(/\s+/g, ' ').trim()
           }
         }
-        
+
         return data
       },
     ],
