@@ -176,9 +176,7 @@ export const Articles: CollectionConfig = {
         },
       ],
       admin: {
-        components: {
-          RowLabel: ({ data }: any) => data?.tag || 'Tag',
-        },
+        description: 'Article tags for categorization and SEO',
       },
     },
     {

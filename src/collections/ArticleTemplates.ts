@@ -147,9 +147,6 @@ export const ArticleTemplates: CollectionConfig = {
       ],
       admin: {
         description: 'Define which fields are required when using this template',
-        components: {
-          RowLabel: ({ data }: any) => `${data?.fieldName || 'Field'} (${data?.fieldType || 'unknown'})`,
-        },
       },
     },
     {
