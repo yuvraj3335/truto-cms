@@ -69,6 +69,10 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    categories: Category;
+    articles: Article;
+    comments: Comment;
+    'article-templates': ArticleTemplate;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -77,6 +81,10 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    articles: ArticlesSelect<false> | ArticlesSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
+    'article-templates': ArticleTemplatesSelect<false> | ArticleTemplatesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -119,6 +127,39 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  role: 'super-admin' | 'admin' | 'editor' | 'author' | 'contributor';
+  displayName: string;
+  /**
+   * Author biography displayed on articles
+   */
+  bio?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Profile picture for author byline
+   */
+  avatar?: (number | null) | Media;
+  socialLinks?:
+    | {
+        platform: 'twitter' | 'linkedin' | 'github' | 'website';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  website?: string | null;
+  articleCount?: number | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -153,8 +194,218 @@ export interface Media {
   filesize?: number | null;
   width?: number | null;
   height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  parentCategory?: (number | null) | Category;
+  /**
+   * Hex color code for category styling
+   */
+  color?: string | null;
+  /**
+   * Icon image for the category
+   */
+  icon?: (number | null) | Media;
+  /**
+   * Order for displaying categories
+   */
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "articles".
+ */
+export interface Article {
+  id: number;
+  title: string;
+  slug: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Brief summary of the article (optional, will be auto-generated if empty)
+   */
+  excerpt?: string | null;
+  /**
+   * Main image displayed with the article
+   */
+  featuredImage?: (number | null) | Media;
+  author: number | User;
+  status: 'draft' | 'review' | 'scheduled' | 'published' | 'archived';
+  /**
+   * When the article should be/was published
+   */
+  publishedDate?: string | null;
+  categories: (number | Category)[];
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * SEO meta title (defaults to article title if empty)
+   */
+  seoMetaTitle?: string | null;
+  /**
+   * SEO meta description (defaults to excerpt if empty)
+   */
+  seoMetaDescription?: string | null;
+  /**
+   * Estimated reading time in minutes
+   */
+  readingTime?: number | null;
+  /**
+   * Number of views
+   */
+  viewsCount?: number | null;
+  /**
+   * Mark as featured article
+   */
+  featuredArticle?: boolean | null;
+  /**
+   * Allow comments on this article
+   */
+  allowComments?: boolean | null;
+  /**
+   * Additional custom data for this article
+   */
+  customFields?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: number;
+  article: number | Article;
+  authorName: string;
+  authorEmail: string;
+  authorWebsite?: string | null;
+  content: string;
+  status: 'pending' | 'approved' | 'spam' | 'deleted';
+  /**
+   * Reply to another comment (for threading)
+   */
+  parentComment?: (number | null) | Comment;
+  /**
+   * IP address for moderation purposes
+   */
+  ipAddress?: string | null;
+  /**
+   * User agent string for moderation purposes
+   */
+  userAgent?: string | null;
+  /**
+   * Internal notes for moderators
+   */
+  moderationNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-templates".
+ */
+export interface ArticleTemplate {
+  id: number;
+  /**
+   * Unique identifier for the template
+   */
+  name: string;
+  /**
+   * Display name for the template
+   */
+  label: string;
+  /**
+   * Description of what this template is for
+   */
+  description?: string | null;
+  /**
+   * JSON schema defining the template structure and default values
+   */
+  schema:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Optional React component name/path for template preview
+   */
+  previewComponent?: string | null;
+  /**
+   * Category of content this template is designed for
+   */
+  category?: ('blog-post' | 'news-article' | 'tutorial' | 'review' | 'interview' | 'case-study' | 'other') | null;
+  /**
+   * Whether this template is available for use
+   */
+  isActive?: boolean | null;
+  /**
+   * Order for displaying templates in selection lists
+   */
+  sortOrder?: number | null;
+  /**
+   * Define which fields are required when using this template
+   */
+  requiredFields?:
+    | {
+        fieldName: string;
+        fieldType: 'text' | 'richText' | 'number' | 'date' | 'select' | 'upload' | 'relationship';
+        isRequired?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Default values to populate when creating an article with this template
+   */
+  defaultValues?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -170,6 +421,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'articles';
+        value: number | Article;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: number | Comment;
+      } | null)
+    | ({
+        relationTo: 'article-templates';
+        value: number | ArticleTemplate;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -218,6 +485,19 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
+  displayName?: T;
+  bio?: T;
+  avatar?: T;
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  website?: T;
+  articleCount?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -250,8 +530,95 @@ export interface MediaSelect<T extends boolean = true> {
   filesize?: T;
   width?: T;
   height?: T;
-  focalX?: T;
-  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  parentCategory?: T;
+  color?: T;
+  icon?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "articles_select".
+ */
+export interface ArticlesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  content?: T;
+  excerpt?: T;
+  featuredImage?: T;
+  author?: T;
+  status?: T;
+  publishedDate?: T;
+  categories?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  seoMetaTitle?: T;
+  seoMetaDescription?: T;
+  readingTime?: T;
+  viewsCount?: T;
+  featuredArticle?: T;
+  allowComments?: T;
+  customFields?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  article?: T;
+  authorName?: T;
+  authorEmail?: T;
+  authorWebsite?: T;
+  content?: T;
+  status?: T;
+  parentComment?: T;
+  ipAddress?: T;
+  userAgent?: T;
+  moderationNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "article-templates_select".
+ */
+export interface ArticleTemplatesSelect<T extends boolean = true> {
+  name?: T;
+  label?: T;
+  description?: T;
+  schema?: T;
+  previewComponent?: T;
+  category?: T;
+  isActive?: T;
+  sortOrder?: T;
+  requiredFields?:
+    | T
+    | {
+        fieldName?: T;
+        fieldType?: T;
+        isRequired?: T;
+        id?: T;
+      };
+  defaultValues?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
