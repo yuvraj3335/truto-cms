@@ -36,7 +36,7 @@ export const Articles: CollectionConfig = {
     defaultColumns: ['title', 'author', 'status', 'publishedDate', 'categories'],
     preview: (doc) => {
       if (doc?.slug) {
-        return `${process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'}/articles/${doc.slug}`
+        return `${process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'}/articles/${doc.slug}/preview`
       }
       return null
     },
@@ -96,10 +96,10 @@ export const Articles: CollectionConfig = {
     },
     {
       name: 'content',
-      type: 'textarea',
+      type: 'richText',
       required: true,
       admin: {
-        description: 'The main content of your article (temporary textarea - will be rich text once working)',
+        description: 'The main content of your article',
       },
     },
     {

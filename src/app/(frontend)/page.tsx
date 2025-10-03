@@ -40,6 +40,12 @@ export default async function HomePage() {
           </a>
           <a
             className="docs"
+            href="/articles"
+          >
+            View Published Articles
+          </a>
+          <a
+            className="docs"
             href="https://payloadcms.com/docs"
             rel="noopener noreferrer"
             target="_blank"
