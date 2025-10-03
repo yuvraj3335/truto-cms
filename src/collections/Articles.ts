@@ -5,16 +5,21 @@ import {
   updateArticleCountAfterDelete,
 } from '../hooks/updateArticleCount'
 
-const calculateReadingTime = (content: any): number => {
+interface LexicalNode {
+  text?: string
+  children?: LexicalNode[]
+}
+
+const calculateReadingTime = (content: LexicalNode | string | null | undefined): number => {
   if (!content) return 0
 
   // Extract text from Lexical editor content
-  const extractText = (node: any): string => {
+  const extractText = (node: LexicalNode | string): string => {
     if (typeof node === 'string') return node
     if (!node || !node.children) return ''
 
     return node.children
-      .map((child: any) => {
+      .map((child: LexicalNode) => {
         if (child.text) return child.text
         if (child.children) return extractText(child)
         return ''
@@ -36,7 +41,9 @@ export const Articles: CollectionConfig = {
     defaultColumns: ['title', 'author', 'status', 'publishedDate', 'categories'],
     preview: (doc) => {
       if (doc?.slug) {
-        return `${process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'}/articles/${doc.slug}/preview`
+        const baseUrl = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'http://localhost:3000'
+        const secret = process.env.PAYLOAD_SECRET
+        return `${baseUrl}/api/preview?url=${encodeURIComponent(`/articles/${doc.slug}/preview`)}&secret=${secret}`
       }
       return null
     },

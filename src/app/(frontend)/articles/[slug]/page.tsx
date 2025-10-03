@@ -29,11 +29,7 @@ export default async function ArticlePage({ params }: { params: Params }) {
         },
       ],
     },
-    populate: {
-      author: true,
-      categories: true,
-      featuredImage: true,
-    },
+    depth: 2,
   })
 
   const article = docs[0]

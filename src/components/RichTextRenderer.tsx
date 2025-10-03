@@ -1,14 +1,34 @@
 import React from 'react'
 
+interface LexicalNode {
+  type?: string
+  tag?: number
+  listType?: string
+  children?: LexicalNode[]
+  text?: string
+  format?: number
+  url?: string
+  fields?: {
+    url?: string
+    newTab?: boolean
+  }
+  bold?: boolean
+  italic?: boolean
+  underline?: boolean
+  strikethrough?: boolean
+  code?: boolean
+  [key: string]: unknown
+}
+
 interface RichTextRendererProps {
-  content: any
+  content: LexicalNode | LexicalNode[] | string | null | undefined
   className?: string
 }
 
 export default function RichTextRenderer({ content, className = '' }: RichTextRendererProps) {
   if (!content) return null
 
-  const renderNode = (node: any, index: number = 0): React.ReactNode => {
+  const renderNode = (node: LexicalNode | string, index: number = 0): React.ReactNode => {
     if (typeof node === 'string') {
       return node
     }
@@ -23,45 +43,46 @@ export default function RichTextRenderer({ content, className = '' }: RichTextRe
       case 'root':
         return (
           <div key={key} className={`rich-text-content ${className}`}>
-            {node.children?.map((child: any, i: number) => renderNode(child, i))}
+            {node.children?.map((child: LexicalNode, i: number) => renderNode(child, i))}
           </div>
         )
 
       case 'paragraph':
         return (
           <p key={key} style={{ marginBottom: '1rem', lineHeight: '1.6' }}>
-            {node.children?.map((child: any, i: number) => renderNode(child, i))}
+            {node.children?.map((child: LexicalNode, i: number) => renderNode(child, i))}
           </p>
         )
 
       case 'heading':
-        const HeadingTag = `h${node.tag || 2}` as keyof JSX.IntrinsicElements
-        return (
-          <HeadingTag 
-            key={key} 
-            style={{ 
-              marginTop: '2rem', 
+        const headingLevel = Math.min(Math.max(node.tag || 2, 1), 6)
+        const HeadingTag = `h${headingLevel}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6'
+        return React.createElement(
+          HeadingTag,
+          {
+            key,
+            style: {
+              marginTop: '2rem',
               marginBottom: '1rem',
               lineHeight: '1.3',
               color: '#2c3e50'
-            }}
-          >
-            {node.children?.map((child: any, i: number) => renderNode(child, i))}
-          </HeadingTag>
+            }
+          },
+          node.children?.map((child: LexicalNode, i: number) => renderNode(child, i))
         )
 
       case 'list':
         const ListTag = node.listType === 'number' ? 'ol' : 'ul'
         return (
           <ListTag key={key} style={{ marginBottom: '1rem', paddingLeft: '2rem' }}>
-            {node.children?.map((child: any, i: number) => renderNode(child, i))}
+            {node.children?.map((child: LexicalNode, i: number) => renderNode(child, i))}
           </ListTag>
         )
 
       case 'listitem':
         return (
           <li key={key} style={{ marginBottom: '0.5rem' }}>
-            {node.children?.map((child: any, i: number) => renderNode(child, i))}
+            {node.children?.map((child: LexicalNode, i: number) => renderNode(child, i))}
           </li>
         )
 
@@ -80,7 +101,7 @@ export default function RichTextRenderer({ content, className = '' }: RichTextRe
               borderRadius: '0 4px 4px 0'
             }}
           >
-            {node.children?.map((child: any, i: number) => renderNode(child, i))}
+            {node.children?.map((child: LexicalNode, i: number) => renderNode(child, i))}
           </blockquote>
         )
 
@@ -110,7 +131,7 @@ export default function RichTextRenderer({ content, className = '' }: RichTextRe
             rel={node.fields?.newTab ? 'noopener noreferrer' : undefined}
             style={{ color: '#3498db', textDecoration: 'underline' }}
           >
-            {node.children?.map((child: any, i: number) => renderNode(child, i))}
+            {node.children?.map((child: LexicalNode, i: number) => renderNode(child, i))}
           </a>
         )
 
@@ -152,7 +173,7 @@ export default function RichTextRenderer({ content, className = '' }: RichTextRe
         if (node.children) {
           return (
             <div key={key}>
-              {node.children.map((child: any, i: number) => renderNode(child, i))}
+              {node.children.map((child: LexicalNode, i: number) => renderNode(child, i))}
             </div>
           )
         }
@@ -161,9 +182,19 @@ export default function RichTextRenderer({ content, className = '' }: RichTextRe
     }
   }
 
+  const renderContent = () => {
+    if (Array.isArray(content)) {
+      return content.map((node, index) => renderNode(node, index))
+    }
+    if (typeof content === 'string') {
+      return content
+    }
+    return renderNode(content as LexicalNode)
+  }
+
   return (
     <div className={`rich-text-renderer ${className}`}>
-      {renderNode(content)}
+      {renderContent()}
     </div>
   )
 }

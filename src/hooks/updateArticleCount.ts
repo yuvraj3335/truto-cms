@@ -1,6 +1,6 @@
-import type { CollectionAfterChangeHook, CollectionAfterDeleteHook } from 'payload'
+import type { CollectionAfterChangeHook, CollectionAfterDeleteHook, Payload } from 'payload'
 
-const updateUserArticleCount = async (userId: string | number, payload: any) => {
+const updateUserArticleCount = async (userId: string | number, payload: Payload) => {
   if (!userId) return
 
   try {

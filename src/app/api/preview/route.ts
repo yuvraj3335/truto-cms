@@ -18,10 +18,9 @@ export async function GET(request: NextRequest) {
     return new Response('URL is required', { status: 400 })
   }
 
-  // Enable draft mode
-  const response = new Response()
+  // Create redirect response with preview cookie
+  const response = Response.redirect(new URL(url, request.url))
   response.headers.set('Set-Cookie', 'payloadToken=preview; Path=/; HttpOnly; SameSite=Strict')
   
-  // Redirect to the provided URL
-  return redirect(url)
+  return response
 }

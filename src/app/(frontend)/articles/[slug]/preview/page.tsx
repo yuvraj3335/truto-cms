@@ -17,6 +17,32 @@ export default async function ArticlePreviewPage({ params }: { params: Params })
   // Check if this is a preview request
   const cookieStore = await cookies()
   const isPreview = cookieStore.get('payloadToken')?.value === 'preview'
+  
+  // If not in preview mode, redirect to public article page
+  if (!isPreview) {
+    const { docs: publicDocs } = await payload.find({
+      collection: 'articles',
+      where: {
+        and: [
+          { slug: { equals: params.slug } },
+          { status: { equals: 'published' } }
+        ]
+      },
+      limit: 1,
+    })
+    
+    if (publicDocs.length > 0) {
+      // Article is published, redirect to public page
+      return <div style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+        <p>This article is published. <a href={`/articles/${params.slug}`} style={{ color: '#007acc' }}>View published version</a></p>
+      </div>
+    } else {
+      // Article is not published and user is not in preview mode
+      return <div style={{ padding: '2rem', textAlign: 'center', color: '#666' }}>
+        <p>Preview access required. Please access this page through the admin panel.</p>
+      </div>
+    }
+  }
 
   const { docs } = await payload.find({
     collection: 'articles',
@@ -25,11 +51,7 @@ export default async function ArticlePreviewPage({ params }: { params: Params })
         equals: params.slug,
       },
     },
-    populate: {
-      author: true,
-      categories: true,
-      featuredImage: true,
-    },
+    depth: 2,
     draft: isPreview, // Include drafts if in preview mode
   })
 
@@ -43,26 +65,71 @@ export default async function ArticlePreviewPage({ params }: { params: Params })
     <>
       {isPreview && (
         <div style={{
-          background: '#ff6b35',
+          background: 'linear-gradient(135deg, #ff6b35 0%, #f7931e 100%)',
           color: 'white',
-          padding: '0.75rem 2rem',
+          padding: '1rem 2rem',
           textAlign: 'center',
           fontWeight: 'bold',
           position: 'sticky',
           top: 0,
-          zIndex: 1000
+          zIndex: 1000,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '1rem'
         }}>
-          🔍 PREVIEW MODE - This is how your article will look when published
-          <Link 
-            href={`/api/exit-preview?redirect=/articles/${params.slug}`}
-            style={{ 
-              color: 'white', 
-              textDecoration: 'underline',
-              marginLeft: '1rem'
-            }}
-          >
-            Exit Preview
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            🔍 <span>PREVIEW MODE</span>
+            <span style={{ 
+              background: 'rgba(255,255,255,0.2)', 
+              padding: '0.25rem 0.5rem', 
+              borderRadius: '4px',
+              fontSize: '0.8rem'
+            }}>
+              Status: {article.status}
+            </span>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            {article.status === 'published' && (
+              <Link 
+                href={`/articles/${params.slug}`}
+                style={{ 
+                  color: 'white', 
+                  textDecoration: 'underline',
+                  fontSize: '0.9rem'
+                }}
+              >
+                View Live
+              </Link>
+            )}
+            <Link 
+              href={`/api/exit-preview?redirect=/admin/collections/articles/${article.id}`}
+              style={{ 
+                color: 'white', 
+                textDecoration: 'underline',
+                fontSize: '0.9rem'
+              }}
+            >
+              Back to Admin
+            </Link>
+            <Link 
+              href={`/api/exit-preview?redirect=/articles`}
+              style={{ 
+                background: 'rgba(255,255,255,0.2)',
+                color: 'white', 
+                textDecoration: 'none',
+                padding: '0.5rem 1rem',
+                borderRadius: '4px',
+                fontSize: '0.9rem',
+                border: '1px solid rgba(255,255,255,0.3)'
+              }}
+            >
+              Exit Preview
+            </Link>
+          </div>
         </div>
       )}
       

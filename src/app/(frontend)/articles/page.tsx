@@ -15,11 +15,7 @@ export default async function ArticlesPage() {
       },
     },
     sort: '-publishedDate',
-    populate: {
-      author: true,
-      categories: true,
-      featuredImage: true,
-    },
+    depth: 2,
   })
 
   return (
