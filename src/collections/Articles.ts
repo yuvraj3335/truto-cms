@@ -10,6 +10,41 @@ export const Articles: CollectionConfig = {
   access: {
     read: () => true,
   },
+  hooks: {
+    beforeChange: [
+      ({ data }) => {
+        // Auto-generate/update JSON-LD schema on save
+        if (data) {
+          const jsonLd: Record<string, any> = {
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: data.title || '',
+            description: data.excerpt || '',
+            author: {
+              '@type': 'Person',
+              name: data.author || '',
+            },
+            datePublished: data.publishedDate || new Date().toISOString(),
+            dateModified: new Date().toISOString(),
+          }
+
+          // Add image if available
+          if (data.coverImage) {
+            // Handle both object references and string IDs
+            if (typeof data.coverImage === 'object' && data.coverImage.url) {
+              jsonLd.image = data.coverImage.url
+            } else if (typeof data.coverImage === 'string') {
+              // Store the media ID reference, will need to be resolved on frontend
+              jsonLd.image = `[MEDIA:${data.coverImage}]`
+            }
+          }
+
+          data.jsonLd = JSON.stringify(jsonLd, null, 2)
+        }
+        return data
+      },
+    ],
+  },
   fields: [
     {
       name: 'title',
@@ -75,6 +110,16 @@ export const Articles: CollectionConfig = {
         date: {
           pickerAppearance: 'dayOnly',
         },
+      },
+    },
+    {
+      name: 'jsonLd',
+      type: 'textarea',
+      admin: {
+        readOnly: true,
+        description: 'Auto-generated JSON-LD structured data for SEO (updates on save)',
+        position: 'sidebar',
+        rows: 15,
       },
     },
   ],

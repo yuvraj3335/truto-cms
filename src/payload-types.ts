@@ -193,6 +193,10 @@ export interface Article {
   };
   author: string;
   publishedDate: string;
+  /**
+   * Auto-generated JSON-LD structured data for SEO (updates on save)
+   */
+  jsonLd?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -308,6 +312,7 @@ export interface ArticlesSelect<T extends boolean = true> {
   content?: T;
   author?: T;
   publishedDate?: T;
+  jsonLd?: T;
   updatedAt?: T;
   createdAt?: T;
 }
