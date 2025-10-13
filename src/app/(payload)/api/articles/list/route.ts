@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { addCorsHeaders, createCorsPreflightResponse } from '@/lib/cors'
+
+// Handle OPTIONS preflight request
+export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get('origin')
+  return createCorsPreflightResponse(origin)
+}
 
 export async function GET(request: NextRequest) {
+  const origin = request.headers.get('origin')
+
   try {
     const payload = await getPayload({ config })
     const { searchParams } = new URL(request.url)
@@ -14,11 +23,13 @@ export async function GET(request: NextRequest) {
 
     // Validate pagination parameters
     if (page < 1) {
-      return NextResponse.json({ error: 'Page must be 1 or greater' }, { status: 400 })
+      const response = NextResponse.json({ error: 'Page must be 1 or greater' }, { status: 400 })
+      return addCorsHeaders(response, origin)
     }
 
     if (limit < 1) {
-      return NextResponse.json({ error: 'Limit must be 1 or greater' }, { status: 400 })
+      const response = NextResponse.json({ error: 'Limit must be 1 or greater' }, { status: 400 })
+      return addCorsHeaders(response, origin)
     }
 
     // Fetch articles with pagination
@@ -30,7 +41,7 @@ export async function GET(request: NextRequest) {
       depth: 1, // Include related data like coverImage
     })
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: articles.docs,
       pagination: {
@@ -44,8 +55,11 @@ export async function GET(request: NextRequest) {
         prevPage: articles.prevPage,
       },
     })
+
+    return addCorsHeaders(response, origin)
   } catch (error) {
     console.error('Error fetching articles list:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return addCorsHeaders(response, origin)
   }
 }
