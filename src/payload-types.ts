@@ -146,6 +146,10 @@ export interface User {
 export interface Media {
   id: number;
   alt: string;
+  /**
+   * Optional caption for the media
+   */
+  caption?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -163,6 +167,15 @@ export interface Media {
 export interface Article {
   id: number;
   title: string;
+  slug: string;
+  /**
+   * Brief description of the article for previews and SEO
+   */
+  excerpt: string;
+  /**
+   * Cover image for article previews and thumbnails
+   */
+  coverImage?: (number | null) | Media;
   content: {
     root: {
       type: string;
@@ -272,6 +285,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  caption?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -288,6 +302,9 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface ArticlesSelect<T extends boolean = true> {
   title?: T;
+  slug?: T;
+  excerpt?: T;
+  coverImage?: T;
   content?: T;
   author?: T;
   publishedDate?: T;
