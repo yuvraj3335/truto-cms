@@ -2,6 +2,21 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Skip middleware for Payload's default API routes
+  // Only apply CORS to custom API routes (articles/[id], articles/list, etc.)
+  if (
+    pathname.startsWith('/api/graphql') ||
+    pathname === '/api/articles' ||
+    pathname === '/api/categories' ||
+    pathname === '/api/media' ||
+    pathname === '/api/users'
+  ) {
+    // Let Payload handle these routes without interference
+    return NextResponse.next()
+  }
+
   // Get the origin from the request
   const origin = request.headers.get('origin')
 
@@ -40,6 +55,8 @@ export function middleware(request: NextRequest) {
 
   return response
 }
+
+// Only apply middleware to custom API routes
 export const config = {
-  matcher: '/api/:path*',
+  matcher: ['/api/articles/:path*', '/api/categories/:path*'],
 }
