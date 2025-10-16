@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 // List of allowed origins for CORS
 export const allowedOrigins = [
   'https://truto-cms-render.pages.dev',
+  'https://truto-cms.yuvraj-432.workers.dev',
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5174',
@@ -16,6 +17,7 @@ export function addCorsHeaders(response: NextResponse, origin: string | null): N
     response.headers.set('Access-Control-Allow-Origin', origin)
     response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS')
     response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.set('Access-Control-Allow-Credentials', 'true')
   }
 
   return response
