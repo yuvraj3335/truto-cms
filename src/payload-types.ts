@@ -70,6 +70,7 @@ export interface Config {
     users: User;
     media: Media;
     articles: Article;
+    categories: Category;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -79,6 +80,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     articles: ArticlesSelect<false> | ArticlesSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -194,9 +196,57 @@ export interface Article {
   author: string;
   publishedDate: string;
   /**
+   * Alternative publish timestamp (auto-synced with publishedDate)
+   */
+  publishedAt?: string | null;
+  status: 'draft' | 'published';
+  categories?: (number | Category)[] | null;
+  /**
+   * Tags for categorizing and filtering articles
+   */
+  tags?:
+    | {
+        name: string;
+        id?: string | null;
+      }[]
+    | null;
+  seo?: {
+    /**
+     * SEO title (falls back to article title)
+     */
+    title?: string | null;
+    /**
+     * SEO description (falls back to excerpt)
+     */
+    description?: string | null;
+    /**
+     * SEO image (falls back to coverImage)
+     */
+    image?: (number | null) | Media;
+  };
+  /**
    * Auto-generated JSON-LD structured data for SEO (updates on save)
    */
   jsonLd?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  /**
+   * Brief description of the category
+   */
+  description?: string | null;
+  /**
+   * Cover image for category display
+   */
+  coverImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
 }
@@ -218,6 +268,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'articles';
         value: number | Article;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -312,7 +366,35 @@ export interface ArticlesSelect<T extends boolean = true> {
   content?: T;
   author?: T;
   publishedDate?: T;
+  publishedAt?: T;
+  status?: T;
+  categories?: T;
+  tags?:
+    | T
+    | {
+        name?: T;
+        id?: T;
+      };
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   jsonLd?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  description?: T;
+  coverImage?: T;
   updatedAt?: T;
   createdAt?: T;
 }

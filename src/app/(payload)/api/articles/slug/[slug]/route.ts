@@ -1,18 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { addCorsHeaders, createCorsPreflightResponse } from '@/lib/cors'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> },
-) {
+// Handle OPTIONS preflight request
+export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get('origin')
+  return createCorsPreflightResponse(origin)
+}
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
+  const origin = request.headers.get('origin')
+
   try {
     const payload = await getPayload({ config })
     const { slug } = await params
 
     // Validate slug format
     if (!slug || typeof slug !== 'string') {
-      return NextResponse.json({ error: 'Invalid article slug' }, { status: 400 })
+      const response = NextResponse.json({ error: 'Invalid article slug' }, { status: 400 })
+      return addCorsHeaders(response, origin)
     }
 
     const articles = await payload.find({
@@ -23,20 +30,23 @@ export async function GET(
         },
       },
       limit: 1,
-      depth: 1, // Include related data like coverImage
+      depth: 2, // Include related data like coverImage, categories
     })
 
     if (!articles.docs.length) {
-      return NextResponse.json({ error: 'Article not found' }, { status: 404 })
+      const response = NextResponse.json({ error: 'Article not found' }, { status: 404 })
+      return addCorsHeaders(response, origin)
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: articles.docs[0],
     })
+    return addCorsHeaders(response, origin)
   } catch (error) {
     console.error('Error fetching article by slug:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return addCorsHeaders(response, origin)
   }
 }
 

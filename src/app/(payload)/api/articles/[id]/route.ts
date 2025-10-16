@@ -1,44 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import { addCorsHeaders, createCorsPreflightResponse } from '@/lib/cors'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+// Handle OPTIONS preflight request
+export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get('origin')
+  return createCorsPreflightResponse(origin)
+}
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const origin = request.headers.get('origin')
+
   try {
     const payload = await getPayload({ config })
     const { id } = await params
 
     // Validate ID format
     if (!id || !/^\d+$/.test(id)) {
-      return NextResponse.json({ error: 'Invalid article ID format' }, { status: 400 })
+      const response = NextResponse.json({ error: 'Invalid article ID format' }, { status: 400 })
+      return addCorsHeaders(response, origin)
     }
 
     const article = await payload.findByID({
       collection: 'articles',
       id: parseInt(id),
-      depth: 1, // Include related data like coverImage
+      depth: 2, // Include related data like coverImage, categories
     })
 
     if (!article) {
-      return NextResponse.json({ error: 'Article not found' }, { status: 404 })
+      const response = NextResponse.json({ error: 'Article not found' }, { status: 404 })
+      return addCorsHeaders(response, origin)
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       data: article,
     })
+    return addCorsHeaders(response, origin)
   } catch (error) {
     console.error('Error fetching article by ID:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return addCorsHeaders(response, origin)
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const payload = await getPayload({ config })
     const { id } = await params
@@ -61,7 +68,10 @@ export async function PATCH(
         const payloadField = formData.get('_payload')
 
         if (!payloadField || typeof payloadField !== 'string') {
-          return NextResponse.json({ error: 'Missing _payload field in form data' }, { status: 400 })
+          return NextResponse.json(
+            { error: 'Missing _payload field in form data' },
+            { status: 400 },
+          )
         }
 
         updateData = JSON.parse(payloadField)
@@ -81,9 +91,9 @@ export async function PATCH(
         return NextResponse.json(
           {
             error: 'Unsupported content type',
-            details: `Expected multipart/form-data or application/json, got: ${contentType}`
+            details: `Expected multipart/form-data or application/json, got: ${contentType}`,
           },
-          { status: 415 }
+          { status: 415 },
         )
       }
     } catch (parseError: any) {
@@ -92,9 +102,9 @@ export async function PATCH(
       return NextResponse.json(
         {
           error: 'Invalid JSON in request body',
-          details: parseError.message
+          details: parseError.message,
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -135,7 +145,7 @@ export async function PATCH(
           error: 'Validation failed',
           details: error.data || error.message,
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -147,9 +157,9 @@ export async function PATCH(
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

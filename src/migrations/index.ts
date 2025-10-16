@@ -3,6 +3,7 @@ import * as migration_20251010_051437 from './20251010_051437'
 import * as migration_20251013_131333 from './20251013_131333'
 import * as migration_20251013_154151 from './20251013_154151'
 import * as migration_20251013_jsonld_field from './20251013_jsonld_field'
+import * as migration_20251016_155650_add_categories_and_update_articles from './20251016_155650_add_categories_and_update_articles'
 
 export const migrations = [
   {
@@ -29,5 +30,10 @@ export const migrations = [
     up: migration_20251013_jsonld_field.up,
     down: migration_20251013_jsonld_field.down,
     name: '20251013_jsonld_field',
+  },
+  {
+    up: migration_20251016_155650_add_categories_and_update_articles.up,
+    down: migration_20251016_155650_add_categories_and_update_articles.down,
+    name: '20251016_155650_add_categories_and_update_articles',
   },
 ]

@@ -113,6 +113,101 @@ export const Articles: CollectionConfig = {
       },
     },
     {
+      name: 'publishedAt',
+      type: 'date',
+      required: false,
+      admin: {
+        description: 'Alternative publish timestamp (auto-synced with publishedDate)',
+        position: 'sidebar',
+      },
+      hooks: {
+        beforeChange: [
+          ({ value, data, siblingData }) => {
+            // Auto-sync with publishedDate if not explicitly set
+            if (!value && siblingData?.publishedDate) {
+              return siblingData.publishedDate
+            }
+            return value
+          },
+        ],
+      },
+    },
+    {
+      name: 'status',
+      type: 'select',
+      required: true,
+      defaultValue: 'draft',
+      options: [
+        {
+          label: 'Draft',
+          value: 'draft',
+        },
+        {
+          label: 'Published',
+          value: 'published',
+        },
+      ],
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'categories',
+      type: 'relationship',
+      relationTo: 'categories',
+      hasMany: true,
+      required: false,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
+      name: 'tags',
+      type: 'array',
+      required: false,
+      admin: {
+        description: 'Tags for categorizing and filtering articles',
+      },
+      fields: [
+        {
+          name: 'name',
+          type: 'text',
+          required: true,
+        },
+      ],
+    },
+    {
+      name: 'seo',
+      type: 'group',
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          required: false,
+          admin: {
+            description: 'SEO title (falls back to article title)',
+          },
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          required: false,
+          admin: {
+            description: 'SEO description (falls back to excerpt)',
+          },
+        },
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          required: false,
+          admin: {
+            description: 'SEO image (falls back to coverImage)',
+          },
+        },
+      ],
+    },
+    {
       name: 'jsonLd',
       type: 'textarea',
       admin: {
