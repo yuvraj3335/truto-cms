@@ -1,15 +1,15 @@
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { BlocksFeature } from '@payloadcms/richtext-lexical'
+import { BlocksFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
+
 import {
-  CodeBlock,
-  CalloutBlock,
-  VideoBlock,
-  QuoteBlock,
-  ImageBlock,
-  TableBlock,
-  FileDownloadBlock,
   AccordionBlock,
+  CalloutBlock,
+  CodeBlock,
+  FileDownloadBlock,
+  ImageBlock,
+  QuoteBlock,
+  TableBlock,
   TweetBlock,
+  VideoBlock,
 } from '../blocks'
 
 /**

@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { allowedOrigins } from './lib/cors'
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Skip middleware for Payload's default API routes
-  // Only apply CORS to custom API routes (articles/[id], articles/list, etc.)
+  // Only apply CORS to custom API routes
   if (
     pathname.startsWith('/api/graphql') ||
     pathname === '/api/articles' ||
@@ -13,23 +14,13 @@ export function middleware(request: NextRequest) {
     pathname === '/api/media' ||
     pathname === '/api/users'
   ) {
-    // Let Payload handle these routes without interference
     return NextResponse.next()
   }
 
-  // Get the origin from the request
   const origin = request.headers.get('origin')
-
-  const allowedOrigins = [
-    'https://truto-cms-render.pages.dev',
-    'https://truto-cms.yuvraj-432.workers.dev',
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://localhost:5174',
-  ]
-
   const isAllowedOrigin = origin && allowedOrigins.includes(origin)
 
+  // Handle preflight requests
   if (request.method === 'OPTIONS') {
     const response = NextResponse.json({}, { status: 200 })
 

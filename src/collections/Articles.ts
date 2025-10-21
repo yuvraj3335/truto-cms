@@ -15,7 +15,21 @@ export const Articles: CollectionConfig = {
       ({ data }) => {
         // Auto-generate/update JSON-LD schema on save
         if (data) {
-          const jsonLd: Record<string, any> = {
+          interface JsonLd {
+            '@context': string
+            '@type': string
+            headline: string
+            description: string
+            author: {
+              '@type': string
+              name: string
+            }
+            datePublished: string
+            dateModified: string
+            image?: string
+          }
+
+          const jsonLd: JsonLd = {
             '@context': 'https://schema.org',
             '@type': 'Article',
             headline: data.title || '',
@@ -63,10 +77,10 @@ export const Articles: CollectionConfig = {
       hooks: {
         beforeValidate: [
           ({ value, data }) => {
-            if (data?.title && !value) {
+            if (!value && data?.title) {
               return data.title
                 .toLowerCase()
-                .replace(/ /g, '-')
+                .replace(/\s+/g, '-')
                 .replace(/[^\w-]+/g, '')
             }
             return value

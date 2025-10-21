@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
 
-// List of allowed origins for CORS
+/**
+ * Centralized list of allowed origins for CORS
+ */
 export const allowedOrigins = [
   'https://truto-cms-render.pages.dev',
+  'https://truto-guides.pages.dev',
   'https://truto-cms.yuvraj-432.workers.dev',
   'http://localhost:3000',
   'http://localhost:5173',

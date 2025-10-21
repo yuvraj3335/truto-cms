@@ -44,8 +44,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     })
     return addCorsHeaders(response, origin)
   } catch (error) {
-    console.error('Error fetching article by slug:', error)
-    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const response = NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
+      },
+      { status: 500 },
+    )
     return addCorsHeaders(response, origin)
   }
 }
@@ -64,7 +69,7 @@ export async function PATCH(
     }
 
     // Parse request body
-    let updateData: any
+    let updateData: Record<string, unknown>
     try {
       updateData = await request.json()
     } catch (error) {
@@ -99,7 +104,7 @@ export async function PATCH(
         collection: 'articles',
         where: {
           slug: {
-            equals: updateData.slug,
+            equals: updateData.slug as string,
           },
           id: {
             not_equals: existingArticle.id,
@@ -129,20 +134,28 @@ export async function PATCH(
       data: updatedArticle,
       message: 'Article updated successfully',
     })
-  } catch (error: any) {
-    console.error('Error updating article by slug:', error)
-
+  } catch (error) {
     // Handle validation errors from Payload
-    if (error.name === 'ValidationError') {
-      return NextResponse.json(
-        {
-          error: 'Validation failed',
-          details: error.data || error.message,
-        },
-        { status: 422 },
-      )
+    if (error && typeof error === 'object' && 'name' in error) {
+      const err = error as { name?: string; data?: unknown; message?: string }
+
+      if (err.name === 'ValidationError') {
+        return NextResponse.json(
+          {
+            error: 'Validation failed',
+            details: err.data || err.message,
+          },
+          { status: 422 },
+        )
+      }
     }
 
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
+      },
+      { status: 500 },
+    )
   }
 }

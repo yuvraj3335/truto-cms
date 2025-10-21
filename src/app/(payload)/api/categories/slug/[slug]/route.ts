@@ -115,8 +115,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return addCorsHeaders(response, origin)
   } catch (error) {
-    console.error('Error fetching category by slug:', error)
-    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const response = NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
+      },
+      { status: 500 },
+    )
     return addCorsHeaders(response, origin)
   }
 }

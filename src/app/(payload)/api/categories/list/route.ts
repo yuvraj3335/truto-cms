@@ -9,6 +9,13 @@ export async function OPTIONS(request: NextRequest) {
   return createCorsPreflightResponse(origin)
 }
 
+interface CategoryWithArticles {
+  id: string | number
+  articleCount: number
+  articles: unknown[]
+  [key: string]: unknown
+}
+
 export async function GET(request: NextRequest) {
   const origin = request.headers.get('origin')
 
@@ -57,9 +64,10 @@ export async function GET(request: NextRequest) {
           limit: 0, // We only want the count
         })
 
-        const categoryData: any = {
+        const categoryData: CategoryWithArticles = {
           ...category,
           articleCount: articlesInCategory.totalDocs,
+          articles: [],
         }
 
         // Include articles if requested
@@ -80,8 +88,6 @@ export async function GET(request: NextRequest) {
           })
 
           categoryData.articles = articles.docs
-        } else {
-          categoryData.articles = []
         }
 
         return categoryData
@@ -105,8 +111,13 @@ export async function GET(request: NextRequest) {
 
     return addCorsHeaders(response, origin)
   } catch (error) {
-    console.error('Error fetching categories list:', error)
-    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const response = NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
+      },
+      { status: 500 },
+    )
     return addCorsHeaders(response, origin)
   }
 }

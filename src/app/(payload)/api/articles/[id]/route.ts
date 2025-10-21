@@ -39,8 +39,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     })
     return addCorsHeaders(response, origin)
   } catch (error) {
-    console.error('Error fetching article by ID:', error)
-    const response = NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    const response = NextResponse.json(
+      {
+        error: 'Internal server error',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
+      },
+      { status: 500 },
+    )
     return addCorsHeaders(response, origin)
   }
 }
@@ -58,7 +63,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const articleId = parseInt(id)
 
     // Read and parse the request body
-    let updateData: any
+    let updateData: Record<string, unknown>
     try {
       const contentType = request.headers.get('content-type') || ''
 
@@ -96,13 +101,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           { status: 415 },
         )
       }
-    } catch (parseError: any) {
-      console.error('JSON parsing error:', parseError.message)
-      console.error('Request headers:', Object.fromEntries(request.headers.entries()))
+    } catch (parseError) {
       return NextResponse.json(
         {
           error: 'Invalid JSON in request body',
-          details: parseError.message,
+          details: parseError instanceof Error ? parseError.message : 'Unknown parsing error',
         },
         { status: 400 },
       )
@@ -135,29 +138,31 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       data: updatedArticle,
       message: 'Article updated successfully',
     })
-  } catch (error: any) {
-    console.error('Error updating article:', error)
-
+  } catch (error) {
     // Handle validation errors from Payload
-    if (error.name === 'ValidationError' || error.status === 400) {
-      return NextResponse.json(
-        {
-          error: 'Validation failed',
-          details: error.data || error.message,
-        },
-        { status: 400 },
-      )
-    }
+    if (error && typeof error === 'object' && ('name' in error || 'status' in error)) {
+      const err = error as { name?: string; status?: number; data?: unknown; message?: string }
 
-    // Handle not found errors
-    if (error.status === 404) {
-      return NextResponse.json({ error: 'Article not found' }, { status: 404 })
+      if (err.name === 'ValidationError' || err.status === 400) {
+        return NextResponse.json(
+          {
+            error: 'Validation failed',
+            details: err.data || err.message,
+          },
+          { status: 400 },
+        )
+      }
+
+      // Handle not found errors
+      if (err.status === 404) {
+        return NextResponse.json({ error: 'Article not found' }, { status: 404 })
+      }
     }
 
     return NextResponse.json(
       {
         error: 'Internal server error',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
       },
       { status: 500 },
     )
